@@ -10,14 +10,16 @@ emnist_labels = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
                  118, 119, 120, 121, 122]
 
 
-def getLettersFromImg(imgFile, out_size=28):
+def getLettersFromImg(imgFile, out_size):
     img = cv2.imread(imgFile)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)
 
     # Get contours
-    contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+
 
     output = img.copy()
 
@@ -31,39 +33,46 @@ def getLettersFromImg(imgFile, out_size=28):
         # hierarchy[i][3]: the index of the parent
         if hierarchy[0][idx][3] == 0:
             cv2.rectangle(output, (x, y), (x + w, y + h), (70, 0, 0), 1)
-            letter_crop = gray[y:y + h, x:x + w]
+            letter_crop = img[y:y + h, x:x + w]
+            letters.append((x, cv2.resize(letter_crop, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
-            # Resize letter canvas to square
-            size_max = max(w, h)
-            letter_square = 255 * numpy.ones(shape=[size_max, size_max], dtype=numpy.uint8)
-            if w > h:
-                # Enlarge image top-bottom
-                # ------
-                # ======
-                # ------
-                y_pos = size_max // 2 - h // 2
-                letter_square[y_pos:y_pos + h, 0:w] = letter_crop
-            elif w < h:
-                # Enlarge image left-right
-                # --||--
-                x_pos = size_max // 2 - w // 2
-                letter_square[0:h, x_pos:x_pos + w] = letter_crop
-            else:
-                letter_square = letter_crop
-
-            # Resize letter to 28x28 and add letter and its X-coordinate
-            letters.append((x, w, cv2.resize(letter_square, (out_size, out_size), interpolation=cv2.INTER_AREA)))
-
-        # Sort array in place by X-coordinate
-    letters.sort(key=lambda x: x[0], reverse=False)
-    return letters
+    #         print(letter_crop.shape)
+    #         cv2.imshow("0", letter_crop)
+    #         cv2.waitKey(0)
+    #
+    #         # Resize letter canvas to square
+    #         size_max = max(w, h)
+    #         letter_square = 255 * numpy.ones(shape=[size_max, size_max], dtype=numpy.uint8)
+    #
+    #         if w > h:
+    #             # Enlarge image top-bottom
+    #             # ------
+    #             # ======
+    #             # ------
+    #             y_pos = size_max // 2 - h // 2
+    #             letter_square[y_pos:y_pos + h, 0:w] = letter_crop
+    #         elif w < h:
+    #             # Enlarge image left-right
+    #             # --||--
+    #             x_pos = size_max // 2 - w // 2
+    #             letter_square[0:h, x_pos:x_pos + w] = letter_crop
+    #         else:
+    #             letter_square = letter_crop
+    #
+    #         # Resize letter to 28x28 and add letter and its X-coordinate
+    #         #letters.append((x, w, cv2.resize(letter_square, (out_size, out_size), interpolation=cv2.INTER_AREA)))
+    #         letters.append(cv2.resize(letter_square, (out_size, out_size), interpolation=cv2.INTER_AREA))
+    #
+    #     # Sort array in place by X-coordinate
+    letters.sort(key=lambda x: x[0], reverse=True)
+    return reversed(letters)
 
 def emnist_predict_img(model, img):
     img_arr = numpy.expand_dims(img, axis=0)
     img_arr = 1 - img_arr/255.0
     img_arr[0] = numpy.rot90(img_arr[0], 3)
     img_arr[0] = numpy.fliplr(img_arr[0])
-    img_arr = img_arr.reshape((1, 28, 28, 1))
+    img_arr = img_arr.reshape((1, 64, 64, 1))
 
     result = model.predict_classes([img_arr])
     return chr(emnist_labels[result[0]])
