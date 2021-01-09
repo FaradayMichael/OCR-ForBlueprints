@@ -2,7 +2,7 @@ import cv2
 import numpy
 import os
 
-def getLettersFromImg(imgFile, out_size=64):
+def getLettersFromImg_old(imgFile, out_size=64):
     img = cv2.imread(imgFile)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
@@ -73,7 +73,8 @@ def getLettersFromImg(imgFile, out_size=64):
     return letters
 
 
-def testF(image_file:str,out_size=64):
+def getLettersFromImg(image_file:str, out_size=64):
+    #Load img
     img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
     trans_mask = img[:, :, 3] == 0
     img[trans_mask] = [255, 255, 255, 255]
@@ -81,6 +82,7 @@ def testF(image_file:str,out_size=64):
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)
 
+    #get contours
     contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
     allRects = []
@@ -100,6 +102,7 @@ def testF(image_file:str,out_size=64):
     subLettersRects = []
     rects = []
     letbI = []
+    #Split on Letters/subLetters
     for r in allRects:
         if r[2]*r[3]<maxArea/10:
             subLettersRects.append(r)
@@ -111,6 +114,7 @@ def testF(image_file:str,out_size=64):
     k = -1
     for j in rects:
         k+=1
+        #Check Ы
         if j[3]/j[2]<5:
             #print(j)
             #cv2.rectangle(output, (rects[j][0], rects[j][1]), (rects[j][0] + rects[j][2], rects[j][1] + rects[j][3]), (70, 0, 0), 1)
@@ -142,13 +146,11 @@ def testF(image_file:str,out_size=64):
             letters.append((rects[k-1][0], cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
     letters.sort(key=lambda x: x[0])
-    # sorted(letters, key=lambda x:x[0])
     return letters
 
 
 if __name__ == '__main__':
-    let = testF("C:/wrk/hhh.png")
+    let = getLettersFromImg("images/s.png")
     for l in let:
         cv2.imshow("a", l[1])
         cv2.waitKey(0)
-   # testF()
