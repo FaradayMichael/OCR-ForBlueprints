@@ -115,7 +115,7 @@ def getLettersFromImg(image_file:str, out_size=64):
     for j in rects:
         k+=1
         #Check Ы
-        if j[3]/j[2]<5:
+        if j[3]/j[2]<6:
             #print(j)
             #cv2.rectangle(output, (rects[j][0], rects[j][1]), (rects[j][0] + rects[j][2], rects[j][1] + rects[j][3]), (70, 0, 0), 1)
             subs = []
@@ -149,8 +149,42 @@ def getLettersFromImg(image_file:str, out_size=64):
     return letters
 
 
+def ts(image_file:str, out_size=64):
+    #Load img
+    img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
+    trans_mask = img[:, :, 3] == 0
+    img[trans_mask] = [255, 255, 255, 255]
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
+    img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)
+
+    #get contours
+    contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+    allRects = []
+    maxArea = 0
+    #get All Letters
+    for idx, contour in enumerate(contours):
+        (x, y, w, h) = cv2.boundingRect(contour)
+
+        if hierarchy[0][idx][3] == 0:
+            #print(x, y, w, h)
+            #cv2.rectangle(output, (x, y), (x + w, y + h), (70, 0, 0), 1)
+            if x != 0 and y != 0:
+                if w * h > maxArea:
+                    maxArea = w * h
+                allRects.append((x, y, w, h))
+                cv2.imshow("a", img_erode[y:y+h, x:x+w])
+                cv2.waitKey(0)
+
+
 if __name__ == '__main__':
-    let = getLettersFromImg("images/s.png")
-    for l in let:
-        cv2.imshow("a", l[1])
-        cv2.waitKey(0)
+    # #let = getLettersFromImg("images/r.png")
+    # let = getLettersFromImg("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\3.png")
+    # o = 0
+    # for l in let:
+    #     cv2.imshow("a", l[1])
+    #     cv2.waitKey(0)
+    #     #cv2.imwrite(str("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Arial\\"+str(o)+"\\"+str(o)+str(o)+".png"),l[1])
+    #    # o+=1
+    ts("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\3.png")
