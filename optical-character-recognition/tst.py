@@ -1,6 +1,7 @@
 import cv2
 import numpy
 import os
+from shutil import copyfile
 
 def getLettersFromImg_old(imgFile, out_size=64):
     img = cv2.imread(imgFile)
@@ -87,6 +88,8 @@ def getLettersFromImg(image_file:str, out_size=64):
 
     allRects = []
     maxArea = 0
+    avgArea = 0
+    u = 0
     #get All Letters
     for idx, contour in enumerate(contours):
         (x, y, w, h) = cv2.boundingRect(contour)
@@ -95,18 +98,34 @@ def getLettersFromImg(image_file:str, out_size=64):
             #print(x, y, w, h)
             #cv2.rectangle(output, (x, y), (x + w, y + h), (70, 0, 0), 1)
             if x != 0 and y != 0:
+                avgArea+=w*h
+                u+=1
                 if w * h > maxArea:
                     maxArea = w * h
                 allRects.append((x, y, w, h))
-
+    #avgArea=avgArea/u
     subLettersRects = []
     rects = []
     letbI = []
+    #print(avgArea)
     #Split on Letters/subLetters
+    bICH = 4
     for r in allRects:
-        if r[2]*r[3]<maxArea/10:
+
+        if r[2]*r[3]<maxArea/4:
+
+            if r[3]/r[2]>bICH:
+                # cv2.imshow("a", img_erode[r[1]:r[1] + r[3], r[0]:r[0] + r[2]])
+                # cv2.waitKey(0)
+                rects.append(r)
+            # print(r[2],r[3])
+
+            #print(r[0],r[1])
             subLettersRects.append(r)
         else:
+            # print(r[0], r[1])
+            # cv2.imshow("a", img_erode[r[1]:r[1] + r[3], r[0]:r[0] + r[2]])
+            # cv2.waitKey(0)
             rects.append(r)
 
     rects.sort(key=lambda x:x[0])
@@ -115,13 +134,18 @@ def getLettersFromImg(image_file:str, out_size=64):
     for j in rects:
         k+=1
         #Check Ы
-        if j[3]/j[2]<6:
+        if j[3]/j[2]<bICH:
             #print(j)
             #cv2.rectangle(output, (rects[j][0], rects[j][1]), (rects[j][0] + rects[j][2], rects[j][1] + rects[j][3]), (70, 0, 0), 1)
+
+            # cv2.imshow("a", img_erode[j[1]:j[1] + j[3], j[0]:j[0] + j[2]])
+            # cv2.waitKey(0)
             subs = []
             for i in subLettersRects:
-                if i[0]>=r[0] and i[0]+i[2]<=r[0]+r[2]:
+                if i[0]>=j[0]-j[2]/10 and i[0]+i[2]<=j[0]+j[2]+j[2]/10 :
+                    #print(i[0], j[0])
                     subs.append(i)
+            # Ё or Й
             if subs:
                 allSubs = subs
                 allSubs.append(j)
@@ -152,11 +176,14 @@ def getLettersFromImg(image_file:str, out_size=64):
 def ts(image_file:str, out_size=64):
     #Load img
     img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
+    #img = cv2.imread(image_file, cv2.IMREAD_ANYCOLOR)
     trans_mask = img[:, :, 3] == 0
     img[trans_mask] = [255, 255, 255, 255]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)
+    (hh, ww) = img_erode.shape[:2]
+    img_erode = cv2.warpAffine(img_erode,cv2.getRotationMatrix2D((ww / 2, hh / 2),-10,1.0),(ww,hh))
 
     #get contours
     contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -178,13 +205,39 @@ def ts(image_file:str, out_size=64):
                 cv2.waitKey(0)
 
 
+def tran():
+    d1 = "C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_1"
+    d2 = "C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64"
+
+    dirs = os.listdir(d1)
+
+    i = 0
+    # for d in dirs:
+    #     j=0
+    #     for img in os.listdir(d1+"/"+d):
+    #         copyfile(d1+"/"+d+"/"+img, d2+"/"+str(i)+"/"+str(j)+".png")
+    #         j+=1
+    #         #os.system(str("cp "+d1+"/"+d+"/"+img+" "+d2+"/"+str(i)+"/"+img))
+    #     i+=1
+    for d in dirs:
+        for img in os.listdir(d1+"/"+d):
+            print(d1+"\\"+d+"\\"+img)
+            l = getLettersFromImg(d1+"\\"+d+"\\"+img)
+
+            cv2.imwrite(str(d2+"/"+str(i)+"/"+img),l[0][1])
+        i+=1
+
 if __name__ == '__main__':
-    # #let = getLettersFromImg("images/r.png")
-    # let = getLettersFromImg("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\3.png")
+    # # #let = getLettersFromImg("images/r.png")
+    #let = getLettersFromImg("C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\4.png")
     # o = 0
     # for l in let:
-    #     cv2.imshow("a", l[1])
-    #     cv2.waitKey(0)
-    #     #cv2.imwrite(str("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Arial\\"+str(o)+"\\"+str(o)+str(o)+".png"),l[1])
-    #    # o+=1
-    ts("C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\3.png")
+    # #     # cv2.imshow("a", l[1])
+    # #     # cv2.waitKey(0)
+    #     cv2.imwrite(str("C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\GOST\\"+str(o)+"\\"+str(o+33)+str(o+33)+".png"),l[1])
+    #     o+=1
+    # #ts("C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\2.png")
+    # let = getLettersFromImg("C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_1\\0\\28.png")
+    # cv2.imshow("a", let[2][1])
+    # cv2.waitKey(0)
+    tran()
