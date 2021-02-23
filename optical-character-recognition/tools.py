@@ -12,6 +12,7 @@ emnist_labels = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70,
 
 def getLettersFromImg(imgFile, out_size):
     img = cv2.imread(imgFile)
+   # print(img.shape)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)

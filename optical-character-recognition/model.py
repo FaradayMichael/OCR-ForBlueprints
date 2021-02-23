@@ -137,14 +137,14 @@ def prepareData(k=5):
 
 def prepareData2():
     ImageDataGenerator = keras.preprocessing.image.ImageDataGenerator
-    TRAINING_DIR = dir+"Cyrillic64_cut"
+    TRAINING_DIR = "C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_r"
     train_datagen = ImageDataGenerator(rescale=1.0 / 255.)
     train_generator = train_datagen.flow_from_directory(TRAINING_DIR,
                                                         batch_size=40,
                                                         class_mode='binary',
                                                         target_size=(64, 64))
 
-    VALIDATION_DIR = dir+"Cyrillic64_cut"
+    VALIDATION_DIR = "C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_r"
     validation_datagen = ImageDataGenerator(rescale=1.0 / 255.)
     validation_generator = validation_datagen.flow_from_directory(VALIDATION_DIR,
                                                                   batch_size=40,
@@ -154,7 +154,7 @@ def prepareData2():
 
 
 def lernNN(model, fileName: str):
-    X_train, x_train_cat, X_test, y_test_cat = prepareData()
+    #X_train, x_train_cat, X_test, y_test_cat = prepareData2()
 
     learning_rate_reduction = keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', patience=3, verbose=1,
                                                                 factor=0.5,
@@ -163,7 +163,7 @@ def lernNN(model, fileName: str):
     train_generator, validation_generator = prepareData2()
 
     history = model.fit_generator(train_generator,
-                           epochs=200,
+                           epochs=300,
                            verbose=1,
                            )
 

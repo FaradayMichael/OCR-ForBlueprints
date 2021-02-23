@@ -76,15 +76,18 @@ def getLettersFromImg_old(imgFile, out_size=64):
 
 def getLettersFromImg(image_file:str, out_size=64):
     #Load img
-    img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
-    trans_mask = img[:, :, 3] == 0
-    img[trans_mask] = [255, 255, 255, 255]
+    #img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
+    img = cv2.imread(image_file)
+
+    #trans_mask = img[:, :, 3] == 0
+    #img[trans_mask] = [255, 255, 255, 255]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     img_erode = cv2.erode(thresh, numpy.ones((3, 3), numpy.uint8), iterations=1)
+    #print(gray.shape)
 
     #get contours
-    contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contours, hierarchy = cv2.findContours(img_erode, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_L1)
 
     allRects = []
     maxArea = 0
@@ -109,7 +112,7 @@ def getLettersFromImg(image_file:str, out_size=64):
     letbI = []
     #print(avgArea)
     #Split on Letters/subLetters
-    bICH = 4
+    bICH = 3
     for r in allRects:
 
         if r[2]*r[3]<maxArea/4:
@@ -156,17 +159,17 @@ def getLettersFromImg(image_file:str, out_size=64):
                         maxX=i[0]+i[2]
                     if i[1]<minY:
                         minY=i[1]
-                l = img_erode[minY:j[1]+j[3], j[0]:j[0]+j[2]]
+                l = img[minY:j[1]+j[3], j[0]:j[0]+j[2]]
                 letters.append((j[0],cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
             else:
-                l = img_erode[j[1]:j[1] + j[3], j[0]:j[0] + j[2]]
+                l = img[j[1]:j[1] + j[3], j[0]:j[0] + j[2]]
                 letters.append((j[0],cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
         else:
             letters.sort(key=lambda x: x[0])
             letters.remove(letters[-1])
 
-            l=img_erode[rects[k-1][1]:rects[k-1][1]+rects[k-1][3],rects[k-1][0]:j[0]+j[2]]
+            l=img[rects[k-1][1]:rects[k-1][1]+rects[k-1][3],rects[k-1][0]:j[0]+j[2]]
             letters.append((rects[k-1][0], cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
     letters.sort(key=lambda x: x[0])
@@ -206,26 +209,48 @@ def ts(image_file:str, out_size=64):
 
 
 def tran():
-    d1 = "C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_1"
-    d2 = "C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64"
+    d1 = "C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64_res"
+    d2 = "C:\\Users\\farad\\Desktop\\OneDrive\\Dev\\cnn\\Cyrillic_cln_64"
 
+    letters = "ЁАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
     dirs = os.listdir(d1)
 
     i = 0
-    # for d in dirs:
+    # for d in letters:
     #     j=0
+    #     print(i)
     #     for img in os.listdir(d1+"/"+d):
     #         copyfile(d1+"/"+d+"/"+img, d2+"/"+str(i)+"/"+str(j)+".png")
     #         j+=1
     #         #os.system(str("cp "+d1+"/"+d+"/"+img+" "+d2+"/"+str(i)+"/"+img))
     #     i+=1
     for d in dirs:
+        print(d)
         for img in os.listdir(d1+"/"+d):
-            print(d1+"\\"+d+"\\"+img)
-            l = getLettersFromImg(d1+"\\"+d+"\\"+img)
-
-            cv2.imwrite(str(d2+"/"+str(i)+"/"+img),l[0][1])
+            #print(d1+"\\"+d+"\\"+img)
+            try:
+                l = getLettersFromImg(d1+"\\"+d+"\\"+img)
+                cv2.imwrite(str(d2+"/"+d+"/"+img),l[0][1])
+            except IndexError:
+                print(img)
+                continue
         i+=1
+
+
+def placeCenter(imgS:str):
+    img = cv2.imread(imgS, cv2.IMREAD_UNCHANGED)
+    trans_mask = img[:, :, 3] == 0
+    img[trans_mask] = [255, 255, 255, 255]
+    # cv2.imshow("a",img)
+    # cv2.waitKey(0)
+    h, w = img.shape[:2]
+    nh = int(h*0.1)
+    nw = int(w*0.1)
+    blankImg = numpy.ones((h+nh*2,w+nw*2,4))
+
+    blankImg[nh:h+nh,nw:w+nw] = img
+    return blankImg
+
 
 if __name__ == '__main__':
     # # #let = getLettersFromImg("images/r.png")
@@ -241,3 +266,4 @@ if __name__ == '__main__':
     # cv2.imshow("a", let[2][1])
     # cv2.waitKey(0)
     tran()
+    #placeCenter("images/a1.png")
