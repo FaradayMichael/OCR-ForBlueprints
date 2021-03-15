@@ -5,10 +5,10 @@ from shutil import copyfile
 
 
 
-def getLettersFromImg(image_file:str, out_size=64):
+def getLettersFromImg(image_file:str, out_size=28):
     ##Load img
-    #img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
-    img = cv2.imread(image_file)
+    img = cv2.imread(image_file, cv2.IMREAD_UNCHANGED)
+    #img = cv2.imread(image_file)
     #trans_mask = img[:, :, 3] == 0
     #img[trans_mask] = [255, 255, 255, 255]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -72,17 +72,17 @@ def getLettersFromImg(image_file:str, out_size=64):
                         maxX=i[0]+i[2]
                     if i[1]<minY:
                         minY=i[1]
-                l = img[minY:j[1]+j[3], j[0]:j[0]+j[2]]
+                l = img_erode[minY:j[1]+j[3], j[0]:j[0]+j[2]]
                 letters.append((j[0],cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
             else:
-                l = img[j[1]:j[1] + j[3], j[0]:j[0] + j[2]]
+                l = img_erode[j[1]:j[1] + j[3], j[0]:j[0] + j[2]]
                 letters.append((j[0],cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
         else:
             letters.sort(key=lambda x: x[0])
             letters.remove(letters[-1])
 
-            l=img[rects[k-1][1]:rects[k-1][1]+rects[k-1][3],rects[k-1][0]:j[0]+j[2]]
+            l=img_erode[rects[k-1][1]:rects[k-1][1]+rects[k-1][3],rects[k-1][0]:j[0]+j[2]]
             letters.append((rects[k-1][0], cv2.resize(l, (out_size, out_size), interpolation=cv2.INTER_AREA)))
 
     letters.sort(key=lambda x: x[0])
