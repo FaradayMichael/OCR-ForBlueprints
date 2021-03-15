@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Convolution2D, MaxPooling2D, Dropout, Flatte
     BatchNormalization
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tools import emnist_labels, emnist_path, dir
-from tst2 import *
+#from tst2 import *
 
 
 def CreateModel_v1():

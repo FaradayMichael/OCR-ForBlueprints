@@ -3,6 +3,8 @@ import idx2numpy
 import numpy
 import os
 from model import *
+from tensorflow import keras
+
 
 
 train_dir = "C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\64_train\\"
