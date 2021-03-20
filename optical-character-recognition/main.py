@@ -20,7 +20,7 @@ def predictLetter(imgArray, model, size=28):
     return alph[int(numpy.argmax(result))], resultArray
 
 if __name__ == '__main__':
-    img = "images/s.png"
+    img = "images/test.png"
 
     # model = createModel_v1(size)
     # trainModel(model, "MF_28")
