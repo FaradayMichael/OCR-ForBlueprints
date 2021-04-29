@@ -16,9 +16,9 @@ def prepareData(size=28):
     #load train data
     X_train = []
     y_train = []
-    for c in os.listdir(train_dir):
-        for i in os.listdir(train_dir + c):
-            img = cv2.imread(train_dir + c + "\\" + i, cv2.IMREAD_UNCHANGED)
+    for c in range(len(alph)):
+        for i in os.listdir(train_dir + str(c)):
+            img = cv2.imread(train_dir + str(c) + "\\" + i, cv2.IMREAD_UNCHANGED)
             img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
             X_train.append(img)
             y_train.append(int(c))
@@ -28,9 +28,9 @@ def prepareData(size=28):
     #load test data
     X_test = []
     y_test = []
-    for c in os.listdir(test_dir):
-        for i in os.listdir(test_dir + c):
-            img = cv2.imread(test_dir + c + "\\" + i, cv2.IMREAD_UNCHANGED)
+    for c in range(len(alph)):
+        for i in os.listdir(test_dir + str(c)):
+            img = cv2.imread(test_dir + str(c) + "\\" + i, cv2.IMREAD_UNCHANGED)
             img = cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
             X_test.append(img)
             y_test.append(int(c))

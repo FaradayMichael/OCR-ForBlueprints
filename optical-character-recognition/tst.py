@@ -237,7 +237,7 @@ def placeCenter(imgS:str):
 
 
 if __name__ == '__main__':
-    # # #let = getLettersFromImg("images/r.png")
+    # # #let = getLettersFromImg("images/rN.png")
     #let = getLettersFromImg("C:\\Users\\Faraday\\Desktop\\OneDrive\\Dev\\cnn\\4.png")
     # o = 0
     # for l in let:

@@ -47,15 +47,37 @@ def createModel_v2(size=28):
     # model.add(Dense(256, activation='relu'))
     # model.add(Dense(len(alph), activation='softmax'))
 
-    model = Sequential()
-    model.add(Flatten(input_shape=(size, size)))
+    # model = Sequential()
+    # model.add(Flatten(input_shape=(size, size)))
+    #
+    # model.add(Dense(512,activation='relu'))
+    # model.add(Dense(256,activation='relu'))
+    # model.add(Dense(len(alph), activation="softmax"))
+    # model.compile(optimizer=Adam(),
+    #               loss='categorical_crossentropy',
+    #               metrics=['accuracy'])
+    model = keras.Sequential()
+    model.add(
+        Convolution2D(filters=64, kernel_size=(4, 4), padding='same', input_shape=(size, size, 1), activation='relu'))
+    model.add(Convolution2D(filters=64, kernel_size=(4, 4), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-    model.add(Dense(512,activation='relu'))
-    model.add(Dense(256,activation='relu'))
-    model.add(Dense(len(alph), activation="softmax"))
-    model.compile(optimizer=Adam(),
-                  loss='categorical_crossentropy',
+    model.add(Convolution2D(filters=128, kernel_size=(4, 4), padding='same', activation='relu'))
+    model.add(Convolution2D(filters=128, kernel_size=(4, 4), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(1024, activation="relu"))
+    model.add(Dense(512, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(len(alph), activation=tensorflow.nn.softmax))
+    # model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0), metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy',
+                  optimizer=Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0),
                   metrics=['accuracy'])
+    return model
     return model
 
 
@@ -80,7 +102,7 @@ def trainModel(model, fileName: str):
     #                        )
 
     model.save("models/" + fileName + ".h5")
-    #model.summary()
+    model.summary()
 
 class CustomCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
